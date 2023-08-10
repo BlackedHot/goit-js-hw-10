@@ -1,0 +1,26 @@
+.is-hidden {
+  display: none;
+ 
+}
+
+.cat-info {
+  display: flex;
+  gap: 50px;
+  margin-top: 30px;
+}
+
+.loader {
+  font-weight: 700;
+}
+
+
+
+.error {
+  font-weight: 700;
+  color: red;
+}
+
+.breed-select {
+  max-width: 500px;
+}
+

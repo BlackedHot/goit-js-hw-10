@@ -1,77 +1,38 @@
-import Notiflix from 'notiflix';
-import SlimSelect from 'slim-select';
+import { fetchBreeds } from "./js/cat-api";
+import { fetchCatByBreed } from "./js/cat-api";
+import SlimSelect from 'slim-select'
 import 'slim-select/dist/slimselect.css';
-import { fetchBreeds, fetchCatByBreed } from './cat-api';
+const selectOptionsElement = document.querySelector('.breed-select');
+const loaderElem = document.querySelector('.loader');
+const errorElem = document.querySelector('.error');
 
-const breedSelect = document.querySelector('.breed-select');
-const catInfo = document.querySelector('.cat-info');
-const loader = document.querySelector('.loader');
-const error = document.querySelector('.error');
-const delay = 2000;
 
-breedSelect.style.display = 'none';
 
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    breedSelect.style.display = 'block';
-    loader.style.display = 'none';
-    error.style.display = 'none';
-  }, delay);
-});
+// selectOptionsElement.classList.add('is-hidden');
+
+// loaderElem.classList.toggle('is-hidden');
+// errorElem.classList.toggle('is-hidden');
 
 fetchBreeds()
-  .then(data => {
-    const option = data
-      .map(({ id, name }) => `<option value="${id}">${name}</option>`)
-      .join('');
-    breedSelect.insertAdjacentHTML('beforeend', option);
-
+  .then(data => { 
+    selectRendering(data);
     new SlimSelect({
-      select: breedSelect,
+     select: selectOptionsElement
     });
   })
-  .catch(() => {
-    loader.style.display = 'none';
-    error.style.display = 'block';
-  });
+  .catch(error => console.log(error)
+  );
 
-breedSelect.addEventListener('change', evt => {
-  evt.preventDefault();
 
-  loader.style.display = 'block';
-  error.style.display = 'none';
+function selectRendering(elements) {
+  const markup = elements.map((element) => {
+    return `<option value="${element.id}">${element.name}</option>`;
+  })
+    .join("");
+  selectOptionsElement.innerHTML = markup;
+};
 
-  Notiflix.Loading.standard('Meowloading... Please meowait...');
 
-  const breedSelectId = breedSelect.value;
+selectOptionsElement.addEventListener('change', fetchCatByBreed);
 
-  fetchCatByBreed(breedSelectId)
-    .then(cat => {
-      loader.style.display = 'none';
-      Notiflix.Loading.remove();
 
-      const markup = `
-        <div class="container" style="display: flex;">
-          <div class="cat-picture">
-            <img src="${cat.url}" alt="${cat.id}" width="400" />
-          </div>
-          <div class="info" style="margin-left: 10px; margin-top: -24px; width: 400px;">
-            <h2>${cat.breeds[0].name}</h2>
-            <p>${cat.breeds[0].description}</p>
-            <p><b>Temperament:</b> ${cat.breeds[0].temperament}</p>
-          </div>
-        </div>`;
-      catInfo.innerHTML = markup;
-      error.style.display = 'none';
-    })
-    .catch(() => {
-      loader.style.display = 'none';
-      Notiflix.Loading.remove();
-      Notiflix.Report.failure(
-        'There is no any meowinfo about cat',
-        'Please choose another meow-breed'
-      );
-      catInfo.innerHTML = '';
-      error.style.display = 'block';
-    });
-});
